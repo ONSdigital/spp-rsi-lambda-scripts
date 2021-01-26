@@ -82,9 +82,9 @@ def start_glue_jobs():
         try:
             # We need to base64 encode the json for config otherwise it'll
             # be mangled on the way through
-            task_input_dict['--config'] = base64.b64encode(
-                task_input_dict['--config'].encode('ascii')
-            ).decode('ascii')
+            task_input_dict["--config"] = base64.b64encode(
+                task_input_dict["--config"].encode("ascii")
+            ).decode("ascii")
             logger.info('Running Glue job named "{}"..'.format(glue_job_name))
             response = glue.start_job_run(
                 JobName=glue_job_name,
@@ -112,6 +112,7 @@ def start_glue_jobs():
                 error="Failed to start Glue job. Check Glue Runner logs for more details.",
             )
             return
+
 
 def check_glue_jobs():
 
@@ -214,7 +215,9 @@ def check_glue_jobs():
                 logger.error(f"Unknown job state {job_run_state}")
 
         except Exception as e:
-            logger.error(f"Error checking job {glue_job_name} run id: {glue_job_run_id}: {e}")
+            logger.error(
+                f"Error checking job {glue_job_name} run id: {glue_job_run_id}: {e}"
+            )
 
         if job_key:
             try:
