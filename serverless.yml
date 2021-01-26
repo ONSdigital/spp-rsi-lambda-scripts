@@ -1,0 +1,75 @@
+---
+service: spp-rsi-lambda-scripts
+provider:
+  name: aws
+  deploymentBucket:
+    name: spp-results-${self:custom.environment}-serverless
+  role: arn:aws:iam::#{AWS::AccountId}:role/lambda_invoke_lambda
+  vpc:
+    securityGroupIds:
+      - ${file(../json_outputs/security_groups_output.json):SecurityGroups.0.GroupId}
+    subnetIds:
+      - ${file(../json_outputs/subnets_output.json):Subnets.0.SubnetId}
+      - ${file(../json_outputs/subnets_output.json):Subnets.1.SubnetId}
+  runtime: python3.7
+  region: eu-west-2
+  package:
+    individually: true
+  memorySize: 512
+  timeout: 10
+  tracing:
+    lambda: true
+
+custom:
+  environment: ${env:ENVIRONMENT}
+
+functions:
+  deploy-dynamo-query-runner:
+    name: dynamo_queryrunner
+    handler: dynamo_queryrunner.lambda_handler
+    package:
+      include:
+        - dynamo_queryrunner/dynamo_queryrunner.py
+      exclude:
+        - ./**
+    layers:
+      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:es_python_layer:latest
+      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:dev-es-common-functions:latest
+    tags:
+      app: results
+    environment:
+      table_name: spp_res_ddb_templates
+
+  deploy-glue-runner:
+    name: gluerunner
+    handler: gluerunner.lambda_handler
+    package:
+      include:
+        - gluerunner/gluerunner.py
+      exclude:
+        - ./**
+    layers:
+      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:es_python_layer:latest
+      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:dev-es-common-functions:latest
+    tags:
+      app: results
+    environment:
+
+  deploy-step-runner:
+    name: steprunner
+    handler: steprunner.lambda_handler
+    package:
+      include:
+        - steprunner/steprunner.py
+      exclude:
+        - ./**
+    layers:
+      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:es_python_layer:latest
+      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:dev-es-common-functions:latest
+    tags:
+      app: results
+    environment:
+
+plugins:
+  - serverless-latest-layer-version
+  - serverless-pseudo-parameters
