@@ -18,8 +18,8 @@ import boto3
 import json
 import os
 from botocore.client import Config
-from boto3.dynamodb.conditions import Key, Attr
-from es_aws_functions import aws_functions, exception_classes, general_functions
+from boto3.dynamodb.conditions import Key
+from es_aws_functions import general_functions
 
 current_module = "spp-res_lam_glue_runner"
 
@@ -109,7 +109,8 @@ def start_glue_jobs():
             logger.error(f"Failed to start Glue job named {glue_job_name}: {e}")
             response = sfn.send_task_failure(
                 taskToken=task_token,
-                error="Failed to start Glue job. Check Glue Runner logs for more details.",
+                error="Failed to start Glue job."
+                      "Check Glue Runner logs for more details.",
             )
             return
 
@@ -117,7 +118,9 @@ def start_glue_jobs():
 def check_glue_jobs():
 
     # Query all items in table for a particular SFN activity ARN
-    # This should retrieve records for all started glue jobs for this particular activity ARN
+    # This should retrieve records for all started glue jobs for
+    # this particular activity ARN
+
     ddb_table = dynamodb.Table(ddb_table_name)
 
     ddb_resp = ddb_table.query(
@@ -146,6 +149,7 @@ def check_glue_jobs():
                     glue_job_run_id, job_run_state
                 )
             )
+
             job_key = {
                 "sfn_activity_arn": sfn_activity_arn,
                 "glue_job_run_id": glue_job_run_id,
@@ -158,7 +162,7 @@ def check_glue_jobs():
                 )
 
                 # Send heartbeat
-                sfn_resp = sfn.send_task_heartbeat(taskToken=sfn_task_token)
+                sfn.send_task_heartbeat(taskToken=sfn_task_token)
 
                 logger.debug("Heartbeat sent to Step Functions.")
 
@@ -183,18 +187,19 @@ def check_glue_jobs():
 
                 task_output_json = json.dumps(task_output_dict)
 
-                sfn_resp = sfn.send_task_success(
+                sfn.send_task_success(
                     taskToken=sfn_task_token, output=task_output_json
                 )
 
             elif job_run_state in ["FAILED", "STOPPED"]:
 
-                message = 'Glue job "{}" run with Run Id "{}" failed. Last state: {}. Error message: {}'.format(
-                    glue_job_name,
-                    glue_job_run_id[:8] + "...",
-                    job_run_state,
-                    job_run_error_message,
-                )
+                message = 'Glue job "{}" run with Run Id "{}" failed. ' \
+                          'Last state: {}. Error message: {}'.format(
+                            glue_job_name,
+                            glue_job_run_id[:8] + "...",
+                            job_run_state,
+                            job_run_error_message,
+                            )
 
                 logger.error(message)
 
@@ -205,7 +210,7 @@ def check_glue_jobs():
                     "glue_job_run_error_msg": job_run_error_message,
                 }
 
-                sfn_resp = sfn.send_task_failure(
+                sfn.send_task_failure(
                     taskToken=sfn_task_token,
                     cause=json.dumps(message_json),
                     error="GlueJobFailedError",
@@ -221,7 +226,7 @@ def check_glue_jobs():
 
         if job_key:
             try:
-                resp = ddb_table.delete_item(Key=job_key)
+                ddb_table.delete_item(Key=job_key)
 
             except Exception as e:
                 logger.error(f"Failed to delete glue job, error: {e}")
