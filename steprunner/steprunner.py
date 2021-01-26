@@ -8,7 +8,7 @@ import botocore
 from botocore.client import Config
 import os
 
-from es_aws_functions import aws_functions, general_functions, exception_classes
+from es_aws_functions import general_functions, exception_classes
 
 lambda_name = "spp-res_lam_step_runner"
 # Because Step Functions client uses long polling, read timeout has to be > 60 seconds
@@ -71,7 +71,7 @@ def handler(event, context):
             message = "The file doesnt exist in the location"
         logger.error(message)
         return json.dumps({"statusCode": 400, "body": message})
-    except Exception as e:
+    except Exception:
 
         message = "There was an error retrieving the file"
         logger.error(message)
@@ -85,7 +85,8 @@ def handler(event, context):
         glue_job_name = os.environ["glue_pyshell_job_name"]
     else:
         logger.info(
-            "Error Steprunner :glue_job_name has not been set.Check glurunner lambda log for more information"
+            "Error Steprunner :glue_job_name has not been set."
+            "Check glurunner lambda log for more information"
         )
     logger.info("Steprunner: glue_job_name : " + str(glue_job_name))
 
@@ -124,7 +125,8 @@ def handler(event, context):
         event["Payload"]["pipeline"]["run_id"] = run_id
 
         logger.info(
-            f"Running {lambda_name} Lambda to invoke Step Function {sfn_arn.split(':')[-1]}"
+            f"Running {lambda_name} Lambda to invoke Step Function "
+            f"{sfn_arn.split(':')[-1]}"
         )
 
         # Expects a 'Payload' dictionary at the top-level in the event.
