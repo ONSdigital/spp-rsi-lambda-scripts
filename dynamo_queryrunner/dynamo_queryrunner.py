@@ -1,5 +1,6 @@
 import boto3
 
+
 def lambda_handler(event, context):
     client = boto3.client('dynamodb')
 
@@ -10,7 +11,8 @@ def lambda_handler(event, context):
             FilterExpression='category = :ctr',
             ExpressionAttributeValues={
                 ":ctr": {'S': event['params']['querystring']['category']}},
-            ProjectionExpression='id, category, created_by, created_time, description, version'
+            ProjectionExpression='id, category, created_by, created_time, '
+                                 'description, version'
         )
 
     elif 'templateid' in event['params']['path']:
