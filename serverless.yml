@@ -43,7 +43,7 @@ functions:
 
   deploy-glue-runner:
     name: spp-res_lam_glue_runner
-    handler: gluerunner/gluerunner.lambda_handler
+    handler: gluerunner/gluerunner.handler
     package:
       include:
         - gluerunner/gluerunner.py
@@ -67,7 +67,7 @@ functions:
 
   deploy-step-runner:
     name: spp-res_lam_step_runner
-    handler: steprunner/steprunner.lambda_handler
+    handler: steprunner/steprunner.handler
     package:
       include:
         - steprunner/steprunner.py
