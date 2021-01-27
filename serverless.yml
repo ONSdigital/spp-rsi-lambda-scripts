@@ -44,6 +44,7 @@ functions:
   deploy-glue-runner:
     name: spp-res_lam_glue_runner
     handler: gluerunner/gluerunner.handler
+    timeout: 300
     events:
       - eventBridge:
           schedule: rate(5 minutes)
