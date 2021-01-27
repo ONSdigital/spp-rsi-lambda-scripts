@@ -54,6 +54,14 @@ functions:
     tags:
       app: results
     environment:
+      environment: ${env:ENVIRONMENT}
+      # yamllint disable-line rule:line-length
+      sfn_activity_arn: arn:aws:states:eu-west-2:#{AWS::AccountId}:activity:spp-res_sfn_GlueRunnerActivity
+      sfn_worker_name: spp-res_lam_glue_runner
+      ddb_table: spp-res_ddb_GlueRunnerActiveJobs
+      ddb_query_limit: 50
+      spark_glue_job_capacity: 1
+
 
   deploy-step-runner:
     name: steprunner
@@ -69,6 +77,11 @@ functions:
     tags:
       app: results
     environment:
+      environment: ${env:ENVIRONMENT}
+      glue_emr_job_name: spp-res_glu_emr
+      glue_pyshell_job_name: spp-res_glu_pyshell
+      # yamllint disable-line rule:line-length
+      sfn_glue_name: arn:aws:states:eu-west-2:#{AWS::AccountId}:stateMachine:spp-res_sfn_glue
 
 plugins:
   - serverless-latest-layer-version
