@@ -25,7 +25,7 @@ custom:
 
 functions:
   deploy-dynamo-query-runner:
-    name: dynamo_queryrunner
+    name: spp-res_lam_dynamodb_queryrunner
     handler: dynamo_queryrunner.lambda_handler
     package:
       include:
@@ -41,7 +41,7 @@ functions:
       table_name: spp_res_ddb_templates
 
   deploy-glue-runner:
-    name: gluerunner
+    name: spp-res_lam_glue_runner
     handler: gluerunner.lambda_handler
     package:
       include:
@@ -56,7 +56,7 @@ functions:
     environment:
 
   deploy-step-runner:
-    name: steprunner
+    name: spp-res_lam_step_runner
     handler: steprunner.lambda_handler
     package:
       include:
