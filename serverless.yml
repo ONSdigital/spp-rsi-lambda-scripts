@@ -32,6 +32,7 @@ functions:
         - dynamo_queryrunner/dynamo_queryrunner.py
       exclude:
         - ./**
+      individually: true
     layers:
       - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:es_python_layer:latest
       - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:dev-es-common-functions:latest
@@ -48,6 +49,7 @@ functions:
         - gluerunner/gluerunner.py
       exclude:
         - ./**
+      individually: true
     layers:
       - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:es_python_layer:latest
       - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:dev-es-common-functions:latest
@@ -71,6 +73,7 @@ functions:
         - steprunner/steprunner.py
       exclude:
         - ./**
+      individually: true
     layers:
       - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:es_python_layer:latest
       - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:dev-es-common-functions:latest
