@@ -1,35 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
-
-@Jordancooke
-ONSdigital
-/
-spp-rsi-glue-scripts
-9
-0
-0
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-spp-rsi-glue-scripts/.gitignore
-@kingmushroom
-kingmushroom initial template
-Latest commit 25de5b9 yesterday
- History
- 1 contributor
-121 lines (96 sloc)  1.36 KB
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -151,15 +119,3 @@ venv.bak/
 
 # Docker debugging with with VSCode (LU-5481)
 .devcontainer/
-© 2021 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
