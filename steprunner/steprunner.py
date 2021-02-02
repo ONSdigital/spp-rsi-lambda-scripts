@@ -67,12 +67,12 @@ def handler(event, context):
         elif "NoSuchKey" in str(e):
             message = "The file doesnt exist in the location"
         logger.error(message)
-        return json.dumps({"statusCode": 400, "body": message})
+        return {"statusCode": 400, "body": message}
     except Exception:
 
         message = "There was an error retrieving the file"
         logger.error(message)
-        return json.dumps({"statusCode": 400, "body": message})
+        return {"statusCode": 400, "body": message}
 
     glue_spark_flag = pipeline["spark"]
     glue_job_name = ""
