@@ -66,12 +66,12 @@ def handler(event, context):
             message = "There was access denied on the file"
         elif "NoSuchKey" in str(e):
             message = "The file doesnt exist in the location"
-        logger.error(message)
+        logger.exception(message)
         return {"statusCode": 400, "body": message}
     except Exception:
 
         message = "There was an error retrieving the file"
-        logger.error(message)
+        logger.exception(message)
         return {"statusCode": 400, "body": message}
 
     glue_spark_flag = pipeline["spark"]
