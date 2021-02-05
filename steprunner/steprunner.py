@@ -66,6 +66,8 @@ def handler(event, context):
             message = "There was access denied on the file"
         elif "NoSuchKey" in str(e):
             message = "The file doesnt exist in the location"
+        elif "NoSuchBucket" in str(e):
+            message = "The specified bucket doesnt exist"
         else:
             logger.exception(e)
             message = "There was an error retrieving the file"
