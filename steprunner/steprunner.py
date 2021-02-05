@@ -66,6 +66,9 @@ def handler(event, context):
             message = "There was access denied on the file"
         elif "NoSuchKey" in str(e):
             message = "The file doesnt exist in the location"
+        else:
+            logger.exception(e)
+            message = "There was an error retrieving the file"
         logger.exception(message)
         return {"statusCode": 400, "body": message}
     except Exception:
