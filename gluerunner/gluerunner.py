@@ -18,9 +18,14 @@ spark_glue_job_capacity = int(os.environ.get("spark_glue_job_capacity"))
 
 # Set up logger with just environment at first
 logger = general_functions.get_logger(None, current_module, environment, None)
+glue = boto3.client("glue")
+# Because Step Functions client uses long polling, read timeout has to be > 60 seconds
+sfn_client_config = Config(connect_timeout=50, read_timeout=70)
+sfn = boto3.client("stepfunctions", config=sfn_client_config)
+dynamodb = boto3.resource("dynamodb")
 
 
-def start_glue_jobs():
+def handler(event, context):
     ddb_table = dynamodb.Table(ddb_table_name)
     glue_job_capacity = spark_glue_job_capacity
 
@@ -98,133 +103,3 @@ def start_glue_jobs():
                       "Check Glue Runner logs for more details.",
             )
             return
-
-
-def check_glue_jobs():
-
-    # Query all items in table for a particular SFN activity ARN
-    # This should retrieve records for all started glue jobs for
-    # this particular activity ARN
-
-    ddb_table = dynamodb.Table(ddb_table_name)
-
-    ddb_resp = ddb_table.query(
-        KeyConditionExpression=Key("sfn_activity_arn").eq(sfn_activity_arn),
-        Limit=ddb_query_limit,
-    )
-
-    for item in ddb_resp["Items"]:
-        glue_job_run_id = item["glue_job_run_id"]
-        glue_job_name = item["glue_job_name"]
-        sfn_task_token = item["sfn_task_token"]
-
-        try:
-
-            logger.debug("Polling Glue job run status")
-
-            glue_resp = glue.get_job_run(
-                JobName=glue_job_name, RunId=glue_job_run_id, PredecessorsIncluded=False
-            )
-
-            job_run_state = glue_resp["JobRun"]["JobRunState"]
-            job_run_error_message = glue_resp["JobRun"].get("ErrorMessage", "")
-
-            logger.debug(
-                'Job with Run Id {} is currently in state "{}"'.format(
-                    glue_job_run_id, job_run_state
-                )
-            )
-
-            job_key = {
-                "sfn_activity_arn": sfn_activity_arn,
-                "glue_job_run_id": glue_job_run_id,
-            }
-
-            if job_run_state in ["STARTING", "RUNNING", "STARTING", "STOPPING"]:
-                job_key = None
-                logger.debug(
-                    "Job with Run Id {} hasn't succeeded yet.".format(glue_job_run_id)
-                )
-
-                # Send heartbeat
-                sfn.send_task_heartbeat(taskToken=sfn_task_token)
-
-                logger.debug("Heartbeat sent to Step Functions.")
-
-            elif job_run_state == "SUCCEEDED":
-
-                logger.info("Job with Run Id {} SUCCEEDED.".format(glue_job_run_id))
-
-                task_output_dict = {
-                    "GlueJobName": glue_job_name,
-                    "GlueJobRunId": glue_job_run_id,
-                    "GlueJobRunState": job_run_state,
-                    "GlueJobStartedOn": glue_resp["JobRun"]
-                    .get("StartedOn", "")
-                    .strftime("%x, %-I:%M %p %Z"),
-                    "GlueJobCompletedOn": glue_resp["JobRun"]
-                    .get("CompletedOn", "")
-                    .strftime("%x, %-I:%M %p %Z"),
-                    "GlueJobLastModifiedOn": glue_resp["JobRun"]
-                    .get("LastModifiedOn", "")
-                    .strftime("%x, %-I:%M %p %Z"),
-                }
-
-                task_output_json = json.dumps(task_output_dict)
-
-                sfn.send_task_success(
-                    taskToken=sfn_task_token, output=task_output_json
-                )
-
-            elif job_run_state in ["FAILED", "STOPPED"]:
-
-                message = 'Glue job "{}" run with Run Id "{}" failed. ' \
-                          'Last state: {}. Error message: {}'.format(
-                            glue_job_name,
-                            glue_job_run_id[:8] + "...",
-                            job_run_state,
-                            job_run_error_message,
-                            )
-
-                logger.error(message)
-
-                message_json = {
-                    "glue_job_name": glue_job_name,
-                    "glue_job_run_id": glue_job_run_id,
-                    "glue_job_run_state": job_run_state,
-                    "glue_job_run_error_msg": job_run_error_message,
-                }
-
-                sfn.send_task_failure(
-                    taskToken=sfn_task_token,
-                    cause=json.dumps(message_json),
-                    error="GlueJobFailedError",
-                )
-
-            else:
-                logger.error(f"Unknown job state {job_run_state}")
-
-        except Exception as e:
-            logger.error(
-                f"Error checking job {glue_job_name} run id: {glue_job_run_id}: {e}"
-            )
-
-        if job_key:
-            try:
-                ddb_table.delete_item(Key=job_key)
-
-            except Exception as e:
-                logger.error(f"Failed to delete glue job, error: {e}")
-
-
-glue = boto3.client("glue")
-# Because Step Functions client uses long polling, read timeout has to be > 60 seconds
-sfn_client_config = Config(connect_timeout=50, read_timeout=70)
-sfn = boto3.client("stepfunctions", config=sfn_client_config)
-dynamodb = boto3.resource("dynamodb")
-
-
-def handler(event, context):
-    start_glue_jobs()
-
-    check_glue_jobs()
