@@ -28,8 +28,9 @@ def handler(event, context):
         ddb_resp = ddb_table.query(
             KeyConditionExpression=Key("glue_job_run_id").eq(glue_job_run_id)
         )
-    except Exception as e:
-        logger.error(f"Trigger job run id {glue_job_run_id} not present in {ddb_table_name}")
+    except dynamodb.exceptions.ResourceNotFoundException as e:
+        logger.error(f"Job {glue_job_run_id} not present in {ddb_table_name}. Error message: {e}")
+        return
 
     for item in ddb_resp["Items"]:
         glue_job_run_id = item["glue_job_run_id"]
