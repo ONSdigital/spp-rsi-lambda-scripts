@@ -98,12 +98,12 @@ def handler(event, context):
     if "source" in event and event["source"] == "aws.glue":
         if event["jobName"] == ingest_glue_name:
             config_to_pass = check_glue_job(event)
-            start_glue_jobs(emr_glue_name, config_to_pass)
+            if config_to_pass:
+                start_glue_jobs(emr_glue_name, config_to_pass)
         elif event["jobName"] == emr_glue_name:
             config_to_pass = check_glue_job(event)
     else:
         # Load config from api handler
         json_data = event["Records"][0]["body"].replace("\n", " ")
         event = json.loads(json_data)
-
         start_glue_jobs(ingest_glue_name, event)
