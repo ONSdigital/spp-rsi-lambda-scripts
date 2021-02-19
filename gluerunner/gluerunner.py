@@ -23,9 +23,6 @@ logger = general_functions.get_logger(None, current_module, environment, None)
 
 
 glue = boto3.client("glue")
-# Because Step Functions client uses long polling, read timeout has to be > 60 seconds
-sfn_client_config = Config(connect_timeout=50, read_timeout=70)
-sfn = boto3.client("stepfunctions", config=sfn_client_config)
 dynamodb = boto3.resource("dynamodb")
 
 
@@ -60,22 +57,16 @@ def start_glue_jobs(job_name, config):
 
 def check_glue_job(glue_info):
     args_pass = {}
-    ddb_table = dynamodb.Table(ddb_table_name)
-    glue_job_run_id = glue_info[""]
-    try:
-        ddb_resp = ddb_table.query(
-            KeyConditionExpression=Key("glue_job_run_id").eq(glue_job_run_id)
-        )
-    except dynamodb.exceptions.ResourceNotFoundException as e:
-        logger.error(f"Job {glue_job_run_id} not present in {ddb_table_name}. Error message: {e}")
 
     if glue_info['detail']['state'] == "SUCCEEDED":
-        logger.info(f"Job with Run Id {glue_job_run_id} SUCCEEDED.")
-        glue = boto3.client("glue")
-        response = glue.get_job_run(JobName=glue_info["detail"]["jobName"], RunId=glue_info["detail"]["jobRunId"])
+        logger.info(f"Job with Run Id {glue_info['detail']['jobRunId']} SUCCEEDED.")
+        response = glue.get_job_run(
+            JobName=glue_info["detail"]["jobName"],
+            RunId=glue_info["detail"]["jobRunId"]
+        )
         args_pass = response["JobRun"]["Arguments"]
     elif glue_info['detail']['state'] in ["FAILED", "STOPPED", "TIMEOUT"]:
-        message = f"Glue job {glue_info['detail']['jobName']} run with Run Id {glue_job_run_id[:8]} failed. " \
+        message = f"Glue job {glue_info['detail']['jobName']} with id {glue_info['detail']['jobRunId'][:8]} failed. " \
                   f"Last state: {glue_info['detail']['state']}. Error message: {glue_info['detail']['message']}"
 
         logger.error(message)
@@ -84,9 +75,10 @@ def check_glue_job(glue_info):
 
     # After logging and messages then delete item from dynamodb table
     try:
+        ddb_table = dynamodb.Table(ddb_table_name)
         job_key = {
             "sfn_activity_arn": sfn_activity_arn,
-            "glue_job_run_id": glue_job_run_id
+            "glue_job_run_id": glue_info['detail']['jobRunId']
         }
         ddb_table.delete_item(Key=job_key)
     except Exception as e:
@@ -103,5 +95,5 @@ def handler(event, context):
         elif event["jobName"] == emr_glue_name:
             config_to_pass = check_glue_job(event)
     else:
-        # Load config from api handler
+        # Initial config should be loaded correctly in api_handler.py
         start_glue_jobs(ingest_glue_name, event)
