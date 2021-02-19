@@ -1,9 +1,5 @@
-import base64
 import boto3
-import json
 import os
-from botocore.client import Config
-from boto3.dynamodb.conditions import Key
 from es_aws_functions import general_functions
 
 current_module = "spp-res_lam_glue_runner"
