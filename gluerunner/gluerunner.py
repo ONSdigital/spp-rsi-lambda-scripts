@@ -104,6 +104,4 @@ def handler(event, context):
             config_to_pass = check_glue_job(event)
     else:
         # Load config from api handler
-        json_data = event["Records"][0]["body"].replace("\n", " ")
-        event = json.loads(json_data)
         start_glue_jobs(ingest_glue_name, event)
