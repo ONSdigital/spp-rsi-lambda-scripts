@@ -14,14 +14,10 @@ emr_glue_name = os.environ.get("emr_glue_name")
 
 # Set up logger with just environment at first
 logger = general_functions.get_logger(None, current_module, environment, None)
-
-
 glue = boto3.client("glue")
-dynamodb = boto3.resource("dynamodb")
 
 
 def start_glue_jobs(job_name, config):
-    ddb_table = dynamodb.Table(ddb_table_name)
     glue_job_capacity = spark_glue_job_capacity
 
     try:
@@ -34,18 +30,6 @@ def start_glue_jobs(job_name, config):
         glue_job_run_id = response["JobRunId"]
     except Exception as e:
         logger.error(f"Error starting glue job {job_name}. Error: {e}")
-
-    try:
-
-        # Store SFN 'Task Token' and Glue Job 'Run Id' in DynamoDB
-        item = {
-            "glue_job_name": job_name,
-            "glue_job_run_id": glue_job_run_id
-        }
-
-        ddb_table.put_item(Item=item)
-    except Exception as e:
-        logger.error(f"Error saving glue job in dynamo table {ddb_table_name}. Error: {e}")
 
 
 def check_glue_job(glue_info):
@@ -66,15 +50,6 @@ def check_glue_job(glue_info):
     else:
         logger.error(f"Glue job {glue_info['detail']['jobName']} response does not contain state.")
 
-    # After logging and messages then delete item from dynamodb table
-    try:
-        ddb_table = dynamodb.Table(ddb_table_name)
-        job_key = {
-            "glue_job_run_id": glue_info['detail']['jobRunId']
-        }
-        ddb_table.delete_item(Key=job_key)
-    except Exception as e:
-        logger.error(f"Failed to delete glue job, error: {e}")
     return args_pass
 
 
@@ -88,4 +63,5 @@ def handler(event, context):
             config_to_pass = check_glue_job(event)
     else:
         # Initial config should be loaded correctly in api_handler.py
+
         start_glue_jobs(ingest_glue_name, event)
