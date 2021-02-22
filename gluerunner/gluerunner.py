@@ -6,8 +6,6 @@ current_module = "spp-res_lam_glue_runner"
 
 # Load environment variables
 environment = os.environ.get("environment")
-sfn_activity_arn = os.environ.get("sfn_activity_arn")
-sfn_worker_name = os.environ.get("sfn_worker_name")
 ddb_table_name = os.environ.get("ddb_table")
 ddb_query_limit = int(os.environ.get("ddb_query_limit"))
 spark_glue_job_capacity = int(os.environ.get("spark_glue_job_capacity"))
@@ -41,7 +39,6 @@ def start_glue_jobs(job_name, config):
 
         # Store SFN 'Task Token' and Glue Job 'Run Id' in DynamoDB
         item = {
-            "sfn_activity_arn": sfn_activity_arn,
             "glue_job_name": job_name,
             "glue_job_run_id": glue_job_run_id
         }
@@ -73,7 +70,6 @@ def check_glue_job(glue_info):
     try:
         ddb_table = dynamodb.Table(ddb_table_name)
         job_key = {
-            "sfn_activity_arn": sfn_activity_arn,
             "glue_job_run_id": glue_info['detail']['jobRunId']
         }
         ddb_table.delete_item(Key=job_key)
