@@ -6,8 +6,6 @@ current_module = "spp-res_lam_glue_runner"
 
 # Load environment variables
 environment = os.environ.get("environment")
-ddb_table_name = os.environ.get("ddb_table")
-ddb_query_limit = int(os.environ.get("ddb_query_limit"))
 spark_glue_job_capacity = int(os.environ.get("spark_glue_job_capacity"))
 ingest_glue_name = os.environ.get("ingest_glue_name")
 emr_glue_name = os.environ.get("emr_glue_name")
