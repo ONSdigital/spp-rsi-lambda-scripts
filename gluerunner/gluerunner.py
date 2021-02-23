@@ -22,6 +22,7 @@ def start_glue_jobs(job_name, config):
             Arguments=config,
             MaxCapacity=spark_glue_job_capacity,
         )
+        logger.info(f"Started job {response['JobRunId']}")
     except Exception as e:
         logger.error(f"Error starting glue job {job_name}. Error: {e}")
 
