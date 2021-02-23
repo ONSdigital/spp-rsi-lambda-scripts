@@ -73,11 +73,6 @@ functions:
       app: results
     environment:
       environment: ${env:ENVIRONMENT}
-      # yamllint disable-line rule:line-length
-      sfn_activity_arn: arn:aws:states:eu-west-2:#{AWS::AccountId}:activity:spp-res_sfn_GlueRunnerActivity
-      sfn_worker_name: spp-res_lam_glue_runner
-      ddb_table: spp-res_ddb_GlueRunnerActiveJobs
-      ddb_query_limit: 50
       spark_glue_job_capacity: 1
       ingest_glue_name: spp-res_glu_ingest
       emr_glue_name: spp-res_glu_emr
