@@ -82,5 +82,5 @@ def handler(event, context):
         logger.exception(f"There was an error starting glue jobs. Error: {e}")
         return {
             'statusCode': 400,
-            'body': e
+            'body': 'Could not start glue job.'
         }
