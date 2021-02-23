@@ -16,13 +16,11 @@ glue = boto3.client("glue")
 
 
 def start_glue_jobs(job_name, config):
-    glue_job_capacity = spark_glue_job_capacity
-
     try:
         response = glue.start_job_run(
             JobName=job_name,
             Arguments=config,
-            MaxCapacity=glue_job_capacity,
+            MaxCapacity=spark_glue_job_capacity,
         )
     except Exception as e:
         logger.error(f"Error starting glue job {job_name}. Error: {e}")
@@ -39,9 +37,9 @@ def check_glue_job(glue_info):
         )
         args_pass = response["JobRun"]["Arguments"]
     elif glue_info['detail']['state'] in ["FAILED", "STOPPED", "TIMEOUT"]:
-        message = \
+        logger.error(
             f"{glue_info['detail']['jobName']} {glue_info['detail']['state']}. Error: {glue_info['detail']['message']}"
-        logger.error(message)
+        )
     else:
         logger.error(f"Glue job {glue_info['detail']['jobName']} response does not contain state.")
 
