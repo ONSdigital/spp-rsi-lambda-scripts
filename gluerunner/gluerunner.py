@@ -24,8 +24,6 @@ def start_glue_jobs(job_name, config):
             Arguments=config,
             MaxCapacity=glue_job_capacity,
         )
-
-        glue_job_run_id = response["JobRunId"]
     except Exception as e:
         logger.error(f"Error starting glue job {job_name}. Error: {e}")
 
@@ -41,9 +39,8 @@ def check_glue_job(glue_info):
         )
         args_pass = response["JobRun"]["Arguments"]
     elif glue_info['detail']['state'] in ["FAILED", "STOPPED", "TIMEOUT"]:
-        message = f"Glue job {glue_info['detail']['jobName']} with id {glue_info['detail']['jobRunId'][:8]} failed. " \
-                  f"Last state: {glue_info['detail']['state']}. Error message: {glue_info['detail']['message']}"
-
+        message = \
+            f"{glue_info['detail']['jobName']} {glue_info['detail']['state']}. Error: {glue_info['detail']['message']}"
         logger.error(message)
     else:
         logger.error(f"Glue job {glue_info['detail']['jobName']} response does not contain state.")
@@ -53,13 +50,15 @@ def check_glue_job(glue_info):
 
 def handler(event, context):
     if "source" in event and event["source"] == "aws.glue":
-        if event["jobName"] == ingest_glue_name:
+        if event["detail"]["jobName"] == ingest_glue_name:
             config_to_pass = check_glue_job(event)
             if config_to_pass:
                 start_glue_jobs(emr_glue_name, config_to_pass)
-        elif event["jobName"] == emr_glue_name:
+            else:
+                # this means config_to_pass is empty
+                logger.error("Failed to retrieve arguments from finished ingest glue")
+        elif event["detail"]["jobName"] == emr_glue_name:
             config_to_pass = check_glue_job(event)
     else:
         # Initial config should be loaded correctly in api_handler.py
-
         start_glue_jobs(ingest_glue_name, event)
