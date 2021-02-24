@@ -62,22 +62,27 @@ def handler(event, context):
                 config_to_pass = check_glue_job(event)
                 if config_to_pass:
                     start_glue_jobs(emr_glue_name, config_to_pass)
+
                 else:
                     # this means config_to_pass is empty
                     logger.error(
                         "Failed to retrieve arguments from finished ingest glue"
                     )
+
             elif event["detail"]["jobName"] == emr_glue_name:
                 # Check and log the status of the glue job. The only effect here
                 # is a log message.
                 check_glue_job(event)
+
         else:
             # Initial config should be loaded correctly in api_handler.py
             start_glue_jobs(ingest_glue_name, event)
+
         return {
             'statusCode': 200,
             'body': 'Glue job successfully started.'
         }
+
     except Exception:
         logger.exception(f"There was an error starting glue jobs.")
         return {
