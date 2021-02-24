@@ -78,9 +78,9 @@ def handler(event, context):
             'statusCode': 200,
             'body': 'Glue job successfully started.'
         }
-    except Exception as e:
-        logger.exception(f"There was an error starting glue jobs. Error: {e}")
+    except Exception:
+        logger.exception(f"There was an error starting glue jobs.")
         return {
-            'statusCode': 400,
-            'body': 'Could not start glue job.'
+            'statusCode': 500,
+            'body': 'Failed to start glue job.'
         }
