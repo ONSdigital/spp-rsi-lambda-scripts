@@ -29,7 +29,7 @@ def start_glue_jobs(job_name, config):
 def check_glue_job(glue_info):
     if glue_info['detail']['state'] == "SUCCEEDED":
         logger.info(f"Job run {glue_info['detail']['jobRunId']} succeeded")
-        response = glue.get_job_run(
+        glue.get_job_run(
             JobName=glue_info["detail"]["jobName"],
             RunId=glue_info["detail"]["jobRunId"]
         )
