@@ -50,16 +50,6 @@ functions:
             detail:
               jobName:
                 - 'spp-res_glu_emr'
-      - cloudwatchEvent:
-          name: 'glu_ingest_trigger_event'
-          event:
-            source:
-              - 'aws.glue'
-            detail-type:
-              - 'Glue Job State Change'
-            detail:
-              jobName:
-                - 'spp-res_glu_ingest'
     package:
       include:
         - gluerunner/gluerunner.py
@@ -74,7 +64,6 @@ functions:
     environment:
       environment: ${env:ENVIRONMENT}
       spark_glue_job_capacity: 1
-      ingest_glue_name: spp-res_glu_ingest
       emr_glue_name: spp-res_glu_emr
 
 plugins:
