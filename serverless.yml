@@ -18,23 +18,6 @@ custom:
   environment: ${env:ENVIRONMENT}
 
 functions:
-  deploy-dynamo-query-runner:
-    name: spp-res_lam_dynamodb_queryrunner
-    handler: dynamo_queryrunner/dynamo_queryrunner.lambda_handler
-    package:
-      include:
-        - dynamo_queryrunner/dynamo_queryrunner.py
-      exclude:
-        - ./**
-      individually: true
-    layers:
-      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:es_python_layer:latest
-      - arn:aws:lambda:eu-west-2:#{AWS::AccountId}:layer:dev-es-common-functions:latest
-    tags:
-      app: results
-    environment:
-      table_name: spp_res_ddb_templates
-
   deploy-glue-runner:
     name: spp-res_lam_glue_runner
     handler: gluerunner/gluerunner.handler
