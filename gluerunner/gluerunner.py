@@ -11,6 +11,7 @@ spark_glue_job_capacity = int(os.environ.get("spark_glue_job_capacity"))
 # The name of the glue job to run
 emr_glue_name = os.environ.get("emr_glue_name")
 
+
 def handler(payload, context):
     # We only have environment and our module name for logging
     logger = general_functions.get_logger(None, current_module, environment, None)
